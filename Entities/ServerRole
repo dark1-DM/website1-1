@@ -1,0 +1,190 @@
+{
+  "name": "ServerRole",
+  "type": "object",
+  "properties": {
+    "bot_id": {
+      "type": "string",
+      "description": "Reference to the Discord bot"
+    },
+    "server_id": {
+      "type": "string",
+      "description": "Discord server ID"
+    },
+    "server_name": {
+      "type": "string",
+      "description": "Discord server name for display"
+    },
+    "role_id": {
+      "type": "string",
+      "description": "Discord role ID"
+    },
+    "role_name": {
+      "type": "string",
+      "description": "Name of the role"
+    },
+    "role_color": {
+      "type": "string",
+      "description": "Hex color code for the role",
+      "default": "#99AAB5"
+    },
+    "position": {
+      "type": "number",
+      "description": "Role hierarchy position",
+      "default": 0
+    },
+    "permissions": {
+      "type": "object",
+      "properties": {
+        "administrator": {
+          "type": "boolean",
+          "default": false
+        },
+        "manage_guild": {
+          "type": "boolean",
+          "default": false
+        },
+        "manage_roles": {
+          "type": "boolean",
+          "default": false
+        },
+        "manage_channels": {
+          "type": "boolean",
+          "default": false
+        },
+        "kick_members": {
+          "type": "boolean",
+          "default": false
+        },
+        "ban_members": {
+          "type": "boolean",
+          "default": false
+        },
+        "create_instant_invite": {
+          "type": "boolean",
+          "default": true
+        },
+        "change_nickname": {
+          "type": "boolean",
+          "default": true
+        },
+        "manage_nicknames": {
+          "type": "boolean",
+          "default": false
+        },
+        "manage_emojis": {
+          "type": "boolean",
+          "default": false
+        },
+        "manage_webhooks": {
+          "type": "boolean",
+          "default": false
+        },
+        "view_audit_log": {
+          "type": "boolean",
+          "default": false
+        },
+        "priority_speaker": {
+          "type": "boolean",
+          "default": false
+        },
+        "stream": {
+          "type": "boolean",
+          "default": true
+        },
+        "read_messages": {
+          "type": "boolean",
+          "default": true
+        },
+        "send_messages": {
+          "type": "boolean",
+          "default": true
+        },
+        "send_tts_messages": {
+          "type": "boolean",
+          "default": false
+        },
+        "manage_messages": {
+          "type": "boolean",
+          "default": false
+        },
+        "embed_links": {
+          "type": "boolean",
+          "default": true
+        },
+        "attach_files": {
+          "type": "boolean",
+          "default": true
+        },
+        "read_message_history": {
+          "type": "boolean",
+          "default": true
+        },
+        "mention_everyone": {
+          "type": "boolean",
+          "default": false
+        },
+        "use_external_emojis": {
+          "type": "boolean",
+          "default": true
+        },
+        "add_reactions": {
+          "type": "boolean",
+          "default": true
+        },
+        "connect": {
+          "type": "boolean",
+          "default": true
+        },
+        "speak": {
+          "type": "boolean",
+          "default": true
+        },
+        "mute_members": {
+          "type": "boolean",
+          "default": false
+        },
+        "deafen_members": {
+          "type": "boolean",
+          "default": false
+        },
+        "move_members": {
+          "type": "boolean",
+          "default": false
+        },
+        "use_voice_activation": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "is_mentionable": {
+      "type": "boolean",
+      "description": "Whether the role can be mentioned by everyone",
+      "default": false
+    },
+    "is_hoisted": {
+      "type": "boolean",
+      "description": "Whether the role is displayed separately in the member list",
+      "default": false
+    },
+    "member_count": {
+      "type": "number",
+      "description": "Number of members with this role",
+      "default": 0
+    },
+    "auto_assign": {
+      "type": "boolean",
+      "description": "Automatically assign to new members",
+      "default": false
+    },
+    "description": {
+      "type": "string",
+      "description": "Role description or purpose"
+    }
+  },
+  "required": [
+    "bot_id",
+    "server_id",
+    "role_name"
+  ]
+}

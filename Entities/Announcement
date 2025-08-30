@@ -1,0 +1,55 @@
+{
+  "name": "Announcement",
+  "type": "object",
+  "properties": {
+    "bot_id": {
+      "type": "string",
+      "description": "Reference to the Discord bot"
+    },
+    "server_id": {
+      "type": "string",
+      "description": "Discord server ID"
+    },
+    "channel_id": {
+      "type": "string",
+      "description": "Channel ID to post the announcement in"
+    },
+    "message": {
+      "type": "string",
+      "description": "The content of the announcement message"
+    },
+    "schedule_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The UTC date and time to send the announcement"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "sent",
+        "failed",
+        "archived"
+      ],
+      "default": "scheduled",
+      "description": "The current status of the announcement"
+    },
+    "repeat_interval": {
+      "type": "string",
+      "enum": [
+        "none",
+        "daily",
+        "weekly",
+        "monthly"
+      ],
+      "default": "none",
+      "description": "How often the announcement should repeat"
+    }
+  },
+  "required": [
+    "bot_id",
+    "channel_id",
+    "message",
+    "schedule_time"
+  ]
+}

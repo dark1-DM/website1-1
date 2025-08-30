@@ -1,0 +1,163 @@
+
+import React, { useState, useEffect, useCallback } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Trash2, Edit } from "lucide-react";
+import { Announcement } from "@/entities/all";
+import { format, parseISO } from "date-fns";
+
+export default function AnnouncementsConfig({ config, botId, onChange }) {
+  const [announcements, setAnnouncements] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editingAnnouncement, setEditingAnnouncement] = useState(null);
+  
+  const initialFormState = {
+    channel_id: '',
+    message: '',
+    schedule_time: '',
+    repeat_interval: 'none',
+  };
+  const [formData, setFormData] = useState(initialFormState);
+
+  const loadAnnouncements = useCallback(async () => {
+    try {
+      const data = await Announcement.filter({ bot_id: botId });
+      setAnnouncements(data.sort((a, b) => new Date(a.schedule_time) - new Date(b.schedule_time)));
+    } catch (error) {
+      console.error("Error loading announcements:", error);
+    }
+  }, [botId]);
+
+  useEffect(() => {
+    if (config.enabled) {
+      loadAnnouncements();
+    }
+  }, [botId, config.enabled, loadAnnouncements]);
+
+  const handleFormChange = (key, value) => {
+    setFormData(prev => ({...prev, [key]: value}));
+  };
+
+  const handleSave = async () => {
+    try {
+      const dataToSave = { 
+        ...formData, 
+        bot_id: botId,
+        server_id: 'global',
+        schedule_time: new Date(formData.schedule_time).toISOString()
+      };
+      if (editingAnnouncement) {
+        await Announcement.update(editingAnnouncement.id, dataToSave);
+      } else {
+        await Announcement.create(dataToSave);
+      }
+      resetForm();
+      loadAnnouncements();
+    } catch (error) {
+      console.error("Error saving announcement:", error);
+    }
+  };
+
+  const handleEdit = (announcement) => {
+    setEditingAnnouncement(announcement);
+    // Format date for datetime-local input
+    const scheduleDate = new Date(announcement.schedule_time);
+    const formattedDate = scheduleDate.toISOString().slice(0, 16);
+    setFormData({ ...announcement, schedule_time: formattedDate });
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await Announcement.delete(id);
+      loadAnnouncements();
+    } catch (error) {
+      console.error("Error deleting announcement:", error);
+    }
+  };
+
+  const resetForm = () => {
+    setShowForm(false);
+    setEditingAnnouncement(null);
+    setFormData(initialFormState);
+  };
+
+  return (
+    <Card className="bg-[#1a1a1a] border-gray-700">
+      <CardHeader>
+        <CardTitle className="text-white flex items-center justify-between">
+          📢 Announcement Scheduler
+          <div className="flex items-center gap-2">
+            <Label className="text-sm text-gray-400">Enable System</Label>
+            <Switch checked={config.enabled} onCheckedChange={(v) => onChange({ enabled: v })} />
+          </div>
+        </CardTitle>
+      </CardHeader>
+      {config.enabled && (
+        <CardContent className="space-y-4">
+          <Button onClick={() => { resetForm(); setShowForm(true); }} className="w-full bg-[#5865F2] hover:bg-[#4752C4]">
+            <Plus className="w-4 h-4 mr-2" /> Schedule New Announcement
+          </Button>
+
+          {showForm && (
+            <div className="bg-[#2C2F33] p-4 rounded-lg border border-gray-600 space-y-4">
+              <h4 className="text-white font-semibold">{editingAnnouncement ? 'Edit' : 'New'} Announcement</h4>
+              <Input placeholder="Channel ID" value={formData.channel_id} onChange={e => handleFormChange('channel_id', e.target.value)} className="bg-[#1a1a1a] border-gray-700 text-white" />
+              <Textarea placeholder="Announcement Message..." value={formData.message} onChange={e => handleFormChange('message', e.target.value)} className="bg-[#1a1a1a] border-gray-700 text-white min-h-[120px]" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input type="datetime-local" value={formData.schedule_time} onChange={e => handleFormChange('schedule_time', e.target.value)} className="bg-[#1a1a1a] border-gray-700 text-white" />
+                <Select value={formData.repeat_interval} onValueChange={v => handleFormChange('repeat_interval', v)}>
+                  <SelectTrigger className="bg-[#1a1a1a] border-gray-700 text-white">
+                    <SelectValue placeholder="Repeat Interval" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#2C2F33] border-gray-700 text-white">
+                    <SelectItem value="none">Don't Repeat</SelectItem>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={resetForm} className="bg-transparent border-gray-600 text-gray-300">Cancel</Button>
+                <Button onClick={handleSave} className="bg-[#43B581] hover:bg-[#369968]">{editingAnnouncement ? 'Update' : 'Save'}</Button>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            {announcements.map(item => (
+              <div key={item.id} className="bg-[#2C2F33] p-3 rounded-lg border border-gray-600 flex justify-between items-start">
+                <div className="flex-1">
+                  <p className="text-white font-medium line-clamp-2">{item.message}</p>
+                  <p className="text-xs text-gray-400">
+                    To: #{item.channel_id} | Status: <span className={`font-semibold ${item.status === 'sent' ? 'text-green-400' : 'text-yellow-400'}`}>{item.status}</span>
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    Schedule: {format(parseISO(item.schedule_time), "MMM d, yyyy 'at' HH:mm")} {item.repeat_interval !== 'none' && `(Repeats ${item.repeat_interval})`}
+                  </p>
+                </div>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" onClick={() => handleEdit(item)} className="text-gray-400 hover:text-white h-8 w-8">
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="text-gray-400 hover:text-red-400 h-8 w-8">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+            {announcements.length === 0 && !showForm && (
+              <p className="text-center text-gray-500 py-4">No announcements scheduled.</p>
+            )}
+          </div>
+        </CardContent>
+      )}
+    </Card>
+  );
+}

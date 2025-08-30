@@ -1,0 +1,52 @@
+import React from 'react';
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Users, Plus } from "lucide-react";
+import { motion } from "framer-motion";
+
+export default function RoleManagerHeader({ bot, onBack, onAddRole }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4"
+    >
+      <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onBack}
+          className="text-gray-400 hover:text-white hover:bg-gray-800"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        <div className="flex items-center gap-3">
+          {bot.avatar_url ? (
+            <img 
+              src={bot.avatar_url} 
+              alt={bot.name}
+              className="w-12 h-12 rounded-lg object-cover"
+            />
+          ) : (
+            <div className="w-12 h-12 bg-gradient-to-r from-[#5865F2] to-[#7289DA] rounded-lg flex items-center justify-center">
+              <span className="text-white text-lg font-semibold">
+                {bot.name?.[0]?.toUpperCase() || 'B'}
+              </span>
+            </div>
+          )}
+          <div>
+            <h1 className="text-3xl font-bold text-white">{bot.name} - Role Manager</h1>
+            <p className="text-gray-400">Manage server roles, permissions, and hierarchy</p>
+          </div>
+        </div>
+      </div>
+      
+      <Button
+        onClick={onAddRole}
+        className="bg-[#5865F2] hover:bg-[#4752C4] text-white px-6 py-3"
+      >
+        <Plus className="w-5 h-5 mr-2" />
+        Create Role
+      </Button>
+    </motion.div>
+  );
+}

@@ -1,0 +1,219 @@
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Trash2, Edit } from "lucide-react";
+import { CustomCommand } from "@/entities/all";
+import { Badge } from "@/components/ui/badge";
+
+export default function CommandsConfig({ botId, config, onChange }) {
+  const [customCommands, setCustomCommands] = useState([]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editingCommand, setEditingCommand] = useState(null);
+  const [newCommand, setNewCommand] = useState({
+    command_name: '',
+    response_type: 'text',
+    response_content: '',
+    permissions: [],
+    cooldown: 5
+  });
+
+  useEffect(() => {
+    loadCustomCommands();
+  }, [botId]);
+
+  const loadCustomCommands = async () => {
+    try {
+      const commands = await CustomCommand.filter({ bot_id: botId });
+      setCustomCommands(commands);
+    } catch (error) {
+      console.error("Error loading custom commands:", error);
+    }
+  };
+
+  const handleInputChange = (key, value) => {
+    onChange({ [key]: value });
+  };
+
+  const handleAddCommand = async () => {
+    try {
+      await CustomCommand.create({
+        bot_id: botId,
+        ...newCommand
+      });
+      setNewCommand({
+        command_name: '',
+        response_type: 'text',
+        response_content: '',
+        permissions: [],
+        cooldown: 5
+      });
+      setShowAddForm(false);
+      loadCustomCommands();
+    } catch (error) {
+      console.error("Error adding command:", error);
+    }
+  };
+
+  const handleDeleteCommand = async (commandId) => {
+    try {
+      await CustomCommand.delete(commandId);
+      loadCustomCommands();
+    } catch (error) {
+      console.error("Error deleting command:", error);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card className="bg-[#1a1a1a] border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-white">Command Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label className="text-gray-300">Global Command Cooldown (seconds)</Label>
+            <Input
+              type="number"
+              min="1"
+              max="300"
+              value={config.command_cooldown}
+              onChange={(e) => handleInputChange('command_cooldown', parseInt(e.target.value) || 5)}
+              className="bg-[#2C2F33] border-gray-600 text-white mt-2"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-[#1a1a1a] border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center justify-between">
+            Custom Commands ({customCommands.length})
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAddForm(!showAddForm)}
+              className="bg-[#5865F2] border-[#5865F2] text-white hover:bg-[#4752C4]"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Command
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {showAddForm && (
+            <div className="bg-[#2C2F33] rounded-lg p-4 border border-gray-600">
+              <h4 className="text-white font-medium mb-4">Add New Command</h4>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-gray-300">Command Name</Label>
+                    <Input
+                      placeholder="hello"
+                      value={newCommand.command_name}
+                      onChange={(e) => setNewCommand({...newCommand, command_name: e.target.value})}
+                      className="bg-[#1a1a1a] border-gray-600 text-white mt-2"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-300">Response Type</Label>
+                    <Select
+                      value={newCommand.response_type}
+                      onValueChange={(value) => setNewCommand({...newCommand, response_type: value})}
+                    >
+                      <SelectTrigger className="bg-[#1a1a1a] border-gray-600 text-white mt-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#2C2F33] border-gray-600">
+                        <SelectItem value="text">Text Response</SelectItem>
+                        <SelectItem value="embed">Embed Message</SelectItem>
+                        <SelectItem value="dm">Direct Message</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-gray-300">Response Content</Label>
+                  <Textarea
+                    placeholder="Hello! How can I help you?"
+                    value={newCommand.response_content}
+                    onChange={(e) => setNewCommand({...newCommand, response_content: e.target.value})}
+                    className="bg-[#1a1a1a] border-gray-600 text-white mt-2"
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAddForm(false)}
+                    className="bg-[#2C2F33] border-gray-600 text-gray-300"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleAddCommand}
+                    disabled={!newCommand.command_name || !newCommand.response_content}
+                    className="bg-[#43B581] hover:bg-[#369968] text-white"
+                  >
+                    Add Command
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            {customCommands.map((command) => (
+              <div key={command.id} className="bg-[#2C2F33] rounded-lg p-4 border border-gray-600">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    <code className="bg-[#1a1a1a] px-2 py-1 rounded text-[#5865F2] text-sm">
+                      !{command.command_name}
+                    </code>
+                    <Badge variant="secondary" className="bg-gray-600 text-gray-200">
+                      {command.response_type}
+                    </Badge>
+                    <span className="text-gray-400 text-sm">
+                      Used {command.usage_count} times
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setEditingCommand(command)}
+                      className="text-gray-400 hover:text-white"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteCommand(command.id)}
+                      className="text-gray-400 hover:text-red-400"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-gray-300 text-sm">
+                  {command.response_content.length > 100 
+                    ? `${command.response_content.substring(0, 100)}...` 
+                    : command.response_content
+                  }
+                </p>
+              </div>
+            ))}
+            {customCommands.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                No custom commands yet. Add your first command above!
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

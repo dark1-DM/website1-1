@@ -1,0 +1,85 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Plus, X } from "lucide-react";
+
+export default function LevellingConfig({ config, onChange }) {
+  const handleToggle = (key, value) => onChange({ [key]: value });
+  const handleInputChange = (key, value) => onChange({ [key]: value });
+
+  const addReward = () => {
+    const rewards = config.level_rewards || [];
+    onChange({ level_rewards: [...rewards, { level: '', role_id: '' }] });
+  };
+  const removeReward = (index) => {
+    const rewards = config.level_rewards || [];
+    onChange({ level_rewards: rewards.filter((_, i) => i !== index) });
+  };
+  const updateReward = (index, key, value) => {
+    const rewards = config.level_rewards || [];
+    rewards[index][key] = value;
+    onChange({ level_rewards: [...rewards] });
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card className="bg-[#1a1a1a] border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center justify-between">
+            📈 Levelling System
+            <div className="flex items-center gap-2">
+              <Label className="text-sm text-gray-400">Enable Levelling</Label>
+              <Switch checked={config.enabled} onCheckedChange={(v) => handleToggle('enabled', v)} />
+            </div>
+          </CardTitle>
+        </CardHeader>
+        {config.enabled && (
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label className="text-gray-300">XP per Message (Min)</Label>
+                <Input type="number" min="0" value={config.xp_per_message_min} onChange={(e) => handleInputChange('xp_per_message_min', parseInt(e.target.value))} className="bg-[#2C2F33] border-gray-600 text-white mt-2" />
+              </div>
+              <div>
+                <Label className="text-gray-300">XP per Message (Max)</Label>
+                <Input type="number" min="0" value={config.xp_per_message_max} onChange={(e) => handleInputChange('xp_per_message_max', parseInt(e.target.value))} className="bg-[#2C2F33] border-gray-600 text-white mt-2" />
+              </div>
+              <div>
+                <Label className="text-gray-300">XP Cooldown (sec)</Label>
+                <Input type="number" min="0" value={config.xp_cooldown} onChange={(e) => handleInputChange('xp_cooldown', parseInt(e.target.value))} className="bg-[#2C2F33] border-gray-600 text-white mt-2" />
+              </div>
+            </div>
+            <div>
+              <Label className="text-gray-300">Level Up Message</Label>
+              <Textarea value={config.level_up_message} onChange={(e) => handleInputChange('level_up_message', e.target.value)} className="bg-[#2C2F33] border-gray-600 text-white mt-2" />
+              <p className="text-sm text-gray-500 mt-1">Use {`{user}`} and {`{level}`}</p>
+            </div>
+          </CardContent>
+        )}
+      </Card>
+      {config.enabled && (
+        <Card className="bg-[#1a1a1a] border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center justify-between">
+              Level Rewards
+              <Button variant="outline" size="sm" onClick={addReward} className="bg-[#2C2F33] border-gray-600 text-gray-300 hover:text-white"><Plus className="w-4 h-4 mr-2" /> Add Reward</Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {config.level_rewards?.map((reward, index) => (
+              <div key={index} className="flex gap-2 items-center">
+                <Input placeholder="Level" type="number" value={reward.level} onChange={(e) => updateReward(index, 'level', parseInt(e.target.value))} className="bg-[#2C2F33] border-gray-600 text-white" />
+                <Input placeholder="Role ID" value={reward.role_id} onChange={(e) => updateReward(index, 'role_id', e.target.value)} className="bg-[#2C2F33] border-gray-600 text-white" />
+                <Button variant="outline" size="icon" onClick={() => removeReward(index)} className="bg-[#2C2F33] border-gray-600 text-gray-400 hover:text-red-400"><X className="w-4 h-4" /></Button>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}

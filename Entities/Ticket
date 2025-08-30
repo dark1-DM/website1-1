@@ -1,0 +1,47 @@
+{
+  "name": "Ticket",
+  "type": "object",
+  "properties": {
+    "bot_id": {
+      "type": "string"
+    },
+    "server_id": {
+      "type": "string"
+    },
+    "ticket_id": {
+      "type": "number"
+    },
+    "creator_id": {
+      "type": "string"
+    },
+    "creator_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "closed",
+        "archived"
+      ],
+      "default": "open"
+    },
+    "channel_id": {
+      "type": "string"
+    },
+    "transcript": {
+      "type": "string"
+    },
+    "claimed_by_id": {
+      "type": "string"
+    },
+    "claimed_by_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "bot_id",
+    "server_id",
+    "creator_id"
+  ]
+}

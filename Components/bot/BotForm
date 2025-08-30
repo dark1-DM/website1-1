@@ -1,0 +1,221 @@
+import React, { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Upload, Eye, EyeOff } from "lucide-react";
+
+const categories = [
+  { value: "moderation", label: "🛡️ Moderation" },
+  { value: "music", label: "🎵 Music" },
+  { value: "utility", label: "🔧 Utility" },
+  { value: "gaming", label: "🎮 Gaming" },
+  { value: "economy", label: "💰 Economy" },
+  { value: "fun", label: "🎉 Fun" },
+  { value: "other", label: "🤖 Other" }
+];
+
+const statusOptions = [
+  { value: "offline", label: "Offline" },
+  { value: "online", label: "Online" },
+  { value: "idle", label: "Idle" },
+  { value: "maintenance", label: "Maintenance" }
+];
+
+export default function BotForm({ onSubmit, isSubmitting, avatarPreview, onAvatarUpload, fileInputRef }) {
+  const [formData, setFormData] = useState({
+    name: "",
+    token: "",
+    description: "",
+    server_count: 0,
+    status: "offline",
+    prefix: "!",
+    category: "utility",
+    avatar_url: ""
+  });
+  
+  const [showToken, setShowToken] = useState(false);
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <Label htmlFor="name" className="text-gray-300">Bot Name *</Label>
+          <Input
+            id="name"
+            value={formData.name}
+            onChange={(e) => handleInputChange('name', e.target.value)}
+            placeholder="My Awesome Bot"
+            required
+            className="bg-[#1a1a1a] border-gray-700 text-white placeholder-gray-500 focus:border-[#5865F2]"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="category" className="text-gray-300">Category</Label>
+          <Select
+            value={formData.category}
+            onValueChange={(value) => handleInputChange('category', value)}
+          >
+            <SelectTrigger className="bg-[#1a1a1a] border-gray-700 text-white focus:border-[#5865F2]">
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#2C2F33] border-gray-700">
+              {categories.map((category) => (
+                <SelectItem 
+                  key={category.value} 
+                  value={category.value}
+                  className="text-gray-300 hover:text-white hover:bg-gray-700"
+                >
+                  {category.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="token" className="text-gray-300">Bot Token *</Label>
+        <div className="relative">
+          <Input
+            id="token"
+            type={showToken ? "text" : "password"}
+            value={formData.token}
+            onChange={(e) => handleInputChange('token', e.target.value)}
+            placeholder="Your Discord bot token"
+            required
+            className="bg-[#1a1a1a] border-gray-700 text-white placeholder-gray-500 focus:border-[#5865F2] pr-12"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowToken(!showToken)}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+          >
+            {showToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </Button>
+        </div>
+        <p className="text-xs text-gray-500">
+          Get your bot token from the Discord Developer Portal
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="description" className="text-gray-300">Description</Label>
+        <Textarea
+          id="description"
+          value={formData.description}
+          onChange={(e) => handleInputChange('description', e.target.value)}
+          placeholder="Describe what your bot does..."
+          className="bg-[#1a1a1a] border-gray-700 text-white placeholder-gray-500 focus:border-[#5865F2] min-h-[100px]"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="space-y-2">
+          <Label htmlFor="prefix" className="text-gray-300">Command Prefix</Label>
+          <Input
+            id="prefix"
+            value={formData.prefix}
+            onChange={(e) => handleInputChange('prefix', e.target.value)}
+            placeholder="!"
+            className="bg-[#1a1a1a] border-gray-700 text-white placeholder-gray-500 focus:border-[#5865F2]"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="server_count" className="text-gray-300">Server Count</Label>
+          <Input
+            id="server_count"
+            type="number"
+            min="0"
+            value={formData.server_count}
+            onChange={(e) => handleInputChange('server_count', parseInt(e.target.value) || 0)}
+            placeholder="0"
+            className="bg-[#1a1a1a] border-gray-700 text-white placeholder-gray-500 focus:border-[#5865F2]"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="status" className="text-gray-300">Initial Status</Label>
+          <Select
+            value={formData.status}
+            onValueChange={(value) => handleInputChange('status', value)}
+          >
+            <SelectTrigger className="bg-[#1a1a1a] border-gray-700 text-white focus:border-[#5865F2]">
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#2C2F33] border-gray-700">
+              {statusOptions.map((status) => (
+                <SelectItem 
+                  key={status.value} 
+                  value={status.value}
+                  className="text-gray-300 hover:text-white hover:bg-gray-700"
+                >
+                  {status.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-gray-300">Bot Avatar</Label>
+        <div className="flex items-center gap-4">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={onAvatarUpload}
+            accept="image/*"
+            className="hidden"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+            className="bg-[#1a1a1a] border-gray-700 text-gray-300 hover:text-white hover:bg-gray-700"
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            Upload Avatar
+          </Button>
+          {avatarPreview && (
+            <img 
+              src={avatarPreview} 
+              alt="Avatar preview" 
+              className="w-12 h-12 rounded-lg object-cover"
+            />
+          )}
+        </div>
+        <p className="text-xs text-gray-500">
+          Optional: Upload an avatar image for your bot
+        </p>
+      </div>
+
+      <div className="flex justify-end gap-3 pt-6">
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="bg-[#5865F2] hover:bg-[#4752C4] text-white px-8 py-2 font-medium"
+        >
+          {isSubmitting ? "Creating Bot..." : "Create Bot"}
+        </Button>
+      </div>
+    </form>
+  );
+}

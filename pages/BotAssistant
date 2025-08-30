@@ -1,0 +1,311 @@
+import React, { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Send, Bot, Sparkles, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { agentSDK } from "@/agents";
+
+import MessageBubble from "../components/agent/MessageBubble";
+import ConversationList from "../components/agent/ConversationList";
+
+export default function BotAssistant() {
+  const navigate = useNavigate();
+  const [conversations, setConversations] = useState([]);
+  const [activeConversation, setActiveConversation] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [inputMessage, setInputMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [showConversations, setShowConversations] = useState(true);
+  const messagesEndRef = useRef(null);
+  const unsubscribeRef = useRef(null);
+
+  useEffect(() => {
+    loadConversations();
+  }, []);
+
+  useEffect(() => {
+    if (activeConversation) {
+      subscribeToConversation();
+    }
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
+    };
+  }, [activeConversation]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const loadConversations = async () => {
+    try {
+      const convs = await agentSDK.listConversations({
+        agent_name: "discord_bot_manager"
+      });
+      setConversations(convs);
+    } catch (error) {
+      console.error("Error loading conversations:", error);
+    }
+  };
+
+  const subscribeToConversation = () => {
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
+    }
+
+    unsubscribeRef.current = agentSDK.subscribeToConversation(
+      activeConversation.id,
+      (data) => {
+        setMessages(data.messages || []);
+      }
+    );
+  };
+
+  const createNewConversation = async () => {
+    try {
+      const conversation = await agentSDK.createConversation({
+        agent_name: "discord_bot_manager",
+        metadata: {
+          name: "New Bot Discussion",
+          description: "Discord bot management conversation"
+        }
+      });
+      setActiveConversation(conversation);
+      setMessages([]);
+      setShowConversations(false);
+      loadConversations();
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+    }
+  };
+
+  const selectConversation = async (conversation) => {
+    try {
+      const fullConv = await agentSDK.getConversation(conversation.id);
+      setActiveConversation(fullConv);
+      setMessages(fullConv.messages || []);
+      setShowConversations(false);
+    } catch (error) {
+      console.error("Error loading conversation:", error);
+    }
+  };
+
+  const sendMessage = async (e) => {
+    e.preventDefault();
+    if (!inputMessage.trim() || !activeConversation || isLoading) return;
+
+    const messageText = inputMessage;
+    setInputMessage("");
+    setIsLoading(true);
+
+    try {
+      await agentSDK.addMessage(activeConversation, {
+        role: "user",
+        content: messageText
+      });
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+    
+    setIsLoading(false);
+  };
+
+  const quickActions = [
+    {
+      label: "Create a new moderation bot",
+      message: "I want to create a new Discord bot focused on moderation. Can you help me set it up with basic moderation features?"
+    },
+    {
+      label: "Set up music bot configuration", 
+      message: "I have a music bot but need help configuring it properly. What settings should I use?"
+    },
+    {
+      label: "Add custom commands",
+      message: "I want to add some custom commands to my bot. Can you show me how to create and manage them?"
+    },
+    {
+      label: "Troubleshoot bot issues",
+      message: "My Discord bot isn't working properly. Can you help me troubleshoot common issues?"
+    }
+  ];
+
+  if (showConversations) {
+    return (
+      <div className="min-h-screen bg-[#1a1a1a] p-6">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-4 mb-8"
+          >
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(createPageUrl("Dashboard"))}
+              className="text-gray-400 hover:text-white hover:bg-gray-800"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-r from-[#5865F2] to-[#7289DA] rounded-lg flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-white">Bot Assistant</h1>
+                <p className="text-gray-400">AI-powered Discord bot management</p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="bg-[#2C2F33] border-gray-800 mb-6">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-[#5865F2] to-[#7289DA] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Bot className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">Welcome to Bot Assistant</h2>
+                <p className="text-gray-400 mb-6">
+                  Get expert help with Discord bot creation, configuration, and troubleshooting
+                </p>
+                <Button
+                  onClick={createNewConversation}
+                  className="bg-[#5865F2] hover:bg-[#4752C4] text-white px-6 py-3"
+                >
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Start New Conversation
+                </Button>
+              </CardContent>
+            </Card>
+
+            <ConversationList
+              conversations={conversations}
+              onSelect={selectConversation}
+              onNew={createNewConversation}
+            />
+
+            {conversations.length === 0 && (
+              <Card className="bg-[#2C2F33] border-gray-800">
+                <CardHeader>
+                  <CardTitle className="text-white">Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {quickActions.map((action, index) => (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      className="bg-[#1a1a1a] border-gray-700 text-gray-300 hover:text-white hover:bg-gray-700 p-4 h-auto text-left justify-start"
+                      onClick={async () => {
+                        await createNewConversation();
+                        setInputMessage(action.message);
+                      }}
+                    >
+                      {action.label}
+                    </Button>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#1a1a1a] flex flex-col">
+      <header className="bg-[#2C2F33] border-b border-gray-800 p-4">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowConversations(true)}
+              className="text-gray-400 hover:text-white hover:bg-gray-700"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-[#5865F2] to-[#7289DA] rounded-lg flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-white">Bot Assistant</h2>
+                <p className="text-xs text-gray-400">Discord Bot Expert</p>
+              </div>
+            </div>
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={createNewConversation}
+            className="bg-[#1a1a1a] border-gray-700 text-gray-300 hover:text-white"
+          >
+            New Chat
+          </Button>
+        </div>
+      </header>
+
+      <div className="flex-1 overflow-hidden flex flex-col max-w-4xl mx-auto w-full">
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <AnimatePresence>
+            {messages.map((message, index) => (
+              <MessageBubble key={index} message={message} />
+            ))}
+          </AnimatePresence>
+          
+          {isLoading && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex justify-start"
+            >
+              <div className="bg-white rounded-2xl px-4 py-3 border border-gray-200">
+                <div className="flex items-center gap-2 text-gray-500">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Bot Assistant is thinking...
+                </div>
+              </div>
+            </motion.div>
+          )}
+          
+          <div ref={messagesEndRef} />
+        </div>
+
+        <div className="border-t border-gray-800 p-4 bg-[#2C2F33]">
+          <form onSubmit={sendMessage} className="flex gap-3">
+            <Input
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              placeholder="Ask about Discord bot management..."
+              disabled={isLoading || !activeConversation}
+              className="bg-[#1a1a1a] border-gray-700 text-white placeholder-gray-500 focus:border-[#5865F2]"
+            />
+            <Button
+              type="submit"
+              disabled={!inputMessage.trim() || isLoading || !activeConversation}
+              className="bg-[#5865F2] hover:bg-[#4752C4] text-white px-6"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </form>
+          <p className="text-xs text-gray-500 mt-2 text-center">
+            Ask about bot creation, configuration, troubleshooting, or Discord API questions
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

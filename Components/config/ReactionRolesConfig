@@ -1,0 +1,103 @@
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Trash2 } from "lucide-react";
+import { ReactionRole } from "@/entities/all";
+
+export default function ReactionRolesConfig({ config, botId, onChange }) {
+  const [reactionRoles, setReactionRoles] = useState([]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newRole, setNewRole] = useState({ message_id: '', channel_id: '', emoji: '', role_id: '', role_name: '' });
+
+  useEffect(() => {
+    if (config.enabled) {
+      loadReactionRoles();
+    }
+  }, [botId, config.enabled]);
+
+  const loadReactionRoles = async () => {
+    try {
+      const roles = await ReactionRole.filter({ bot_id: botId });
+      setReactionRoles(roles);
+    } catch (error) {
+      console.error("Error loading reaction roles:", error);
+    }
+  };
+
+  const handleAddRole = async () => {
+    try {
+      await ReactionRole.create({ bot_id: botId, server_id: 'global', ...newRole });
+      setNewRole({ message_id: '', channel_id: '', emoji: '', role_id: '', role_name: '' });
+      setShowAddForm(false);
+      loadReactionRoles();
+    } catch (error) {
+      console.error("Error adding reaction role:", error);
+    }
+  };
+
+  const handleDeleteRole = async (roleId) => {
+    try {
+      await ReactionRole.delete(roleId);
+      loadReactionRoles();
+    } catch (error) {
+      console.error("Error deleting reaction role:", error);
+    }
+  };
+
+  return (
+    <Card className="bg-[#1a1a1a] border-gray-700">
+      <CardHeader>
+        <CardTitle className="text-white flex items-center justify-between">
+          🎭 Reaction Roles
+          <div className="flex items-center gap-2">
+            <Label className="text-sm text-gray-400">Enable System</Label>
+            <Switch checked={config.enabled} onCheckedChange={(v) => onChange({ enabled: v })} />
+          </div>
+        </CardTitle>
+      </CardHeader>
+      {config.enabled && (
+        <CardContent className="space-y-4">
+          <Button onClick={() => setShowAddForm(!showAddForm)} className="w-full bg-[#5865F2] hover:bg-[#4752C4]">
+            <Plus className="w-4 h-4 mr-2" /> Add New Reaction Role
+          </Button>
+
+          {showAddForm && (
+            <div className="bg-[#2C2F33] p-4 rounded-lg border border-gray-600 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input placeholder="Message ID" value={newRole.message_id} onChange={e => setNewRole({...newRole, message_id: e.target.value})} className="bg-[#1a1a1a] border-gray-700 text-white" />
+                <Input placeholder="Channel ID" value={newRole.channel_id} onChange={e => setNewRole({...newRole, channel_id: e.target.value})} className="bg-[#1a1a1a] border-gray-700 text-white" />
+                <Input placeholder="Emoji" value={newRole.emoji} onChange={e => setNewRole({...newRole, emoji: e.target.value})} className="bg-[#1a1a1a] border-gray-700 text-white" />
+                <Input placeholder="Role ID" value={newRole.role_id} onChange={e => setNewRole({...newRole, role_id: e.target.value})} className="bg-[#1a1a1a] border-gray-700 text-white" />
+              </div>
+              <Input placeholder="Role Name (for display)" value={newRole.role_name} onChange={e => setNewRole({...newRole, role_name: e.target.value})} className="bg-[#1a1a1a] border-gray-700 text-white" />
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowAddForm(false)} className="bg-transparent border-gray-600 text-gray-300">Cancel</Button>
+                <Button onClick={handleAddRole} className="bg-[#43B581] hover:bg-[#369968]">Save Role</Button>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            {reactionRoles.map(role => (
+              <div key={role.id} className="bg-[#2C2F33] p-3 rounded-lg border border-gray-600 flex justify-between items-center">
+                <div>
+                  <p className="text-white font-medium">{role.emoji} ➔ {role.role_name || role.role_id}</p>
+                  <p className="text-xs text-gray-400">Message ID: {role.message_id}</p>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => handleDeleteRole(role.id)} className="text-gray-400 hover:text-red-400">
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+            {reactionRoles.length === 0 && !showAddForm && (
+              <p className="text-center text-gray-500 py-4">No reaction roles configured.</p>
+            )}
+          </div>
+        </CardContent>
+      )}
+    </Card>
+  );
+}

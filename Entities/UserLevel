@@ -1,0 +1,35 @@
+{
+  "name": "UserLevel",
+  "type": "object",
+  "properties": {
+    "bot_id": {
+      "type": "string"
+    },
+    "server_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "xp": {
+      "type": "number",
+      "default": 0
+    },
+    "level": {
+      "type": "number",
+      "default": 0
+    },
+    "total_xp": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "bot_id",
+    "server_id",
+    "user_id"
+  ]
+}

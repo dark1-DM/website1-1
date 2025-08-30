@@ -1,0 +1,148 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Plus, X, Eye, EyeOff } from "lucide-react";
+
+export default function ApiConfig({ config, onChange }) {
+  const [showWebhook, setShowWebhook] = React.useState(false);
+
+  const handleToggle = (key, value) => {
+    onChange({ [key]: value });
+  };
+
+  const handleInputChange = (key, value) => {
+    onChange({ [key]: value });
+  };
+
+  const addAllowedIp = () => {
+    const ips = config.allowed_ips || [];
+    onChange({ allowed_ips: [...ips, ''] });
+  };
+
+  const removeAllowedIp = (index) => {
+    const ips = config.allowed_ips || [];
+    onChange({ allowed_ips: ips.filter((_, i) => i !== index) });
+  };
+
+  const updateAllowedIp = (index, value) => {
+    const ips = config.allowed_ips || [];
+    ips[index] = value;
+    onChange({ allowed_ips: [...ips] });
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card className="bg-[#1a1a1a] border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            🔌 API Settings
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-gray-300">Enable API Access</Label>
+              <p className="text-sm text-gray-500">Allow external applications to interact with your bot</p>
+            </div>
+            <Switch
+              checked={config.api_enabled}
+              onCheckedChange={(value) => handleToggle('api_enabled', value)}
+            />
+          </div>
+
+          {config.api_enabled && (
+            <>
+              <div>
+                <Label className="text-gray-300">Rate Limit (requests/hour)</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="10000"
+                  value={config.rate_limit}
+                  onChange={(e) => handleInputChange('rate_limit', parseInt(e.target.value) || 100)}
+                  className="bg-[#2C2F33] border-gray-600 text-white mt-2"
+                />
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="bg-[#1a1a1a] border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-white">Webhook Configuration</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label className="text-gray-300">Webhook URL</Label>
+            <div className="relative mt-2">
+              <Input
+                type={showWebhook ? "text" : "password"}
+                placeholder="https://your-webhook-url.com"
+                value={config.webhook_url}
+                onChange={(e) => handleInputChange('webhook_url', e.target.value)}
+                className="bg-[#2C2F33] border-gray-600 text-white pr-12"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowWebhook(!showWebhook)}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+              >
+                {showWebhook ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </Button>
+            </div>
+            <p className="text-sm text-gray-500 mt-1">URL to receive bot event notifications</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-[#1a1a1a] border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center justify-between">
+            Allowed IP Addresses
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={addAllowedIp}
+              className="bg-[#2C2F33] border-gray-600 text-gray-300 hover:text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add IP
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {config.allowed_ips?.length > 0 ? (
+            config.allowed_ips.map((ip, index) => (
+              <div key={index} className="flex gap-2">
+                <Input
+                  placeholder="192.168.1.1"
+                  value={ip}
+                  onChange={(e) => updateAllowedIp(index, e.target.value)}
+                  className="bg-[#2C2F33] border-gray-600 text-white"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => removeAllowedIp(index)}
+                  className="bg-[#2C2F33] border-gray-600 text-gray-400 hover:text-red-400"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-500 text-center py-4">
+              No IP restrictions. API accessible from anywhere.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

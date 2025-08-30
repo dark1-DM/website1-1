@@ -1,0 +1,95 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Plus, X } from "lucide-react";
+
+export default function RoleManagementConfig({ config, onChange }) {
+  const addItem = (key) => {
+    const items = config[key] || [];
+    onChange({ [key]: [...items, ''] });
+  };
+
+  const removeItem = (key, index) => {
+    const items = config[key] || [];
+    onChange({ [key]: items.filter((_, i) => i !== index) });
+  };
+
+  const updateItem = (key, index, value) => {
+    const items = config[key] || [];
+    items[index] = value;
+    onChange({ [key]: [...items] });
+  };
+
+  const renderRoleList = (key, title, description) => (
+    <Card className="bg-[#1a1a1a] border-gray-700">
+      <CardHeader>
+        <CardTitle className="text-white flex items-center justify-between">
+          {title}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => addItem(key)}
+            className="bg-[#2C2F33] border-gray-600 text-gray-300 hover:text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add
+          </Button>
+        </CardTitle>
+        <p className="text-gray-400 text-sm">{description}</p>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {(config[key] || []).map((item, index) => (
+          <div key={index} className="flex gap-2">
+            <Input
+              placeholder={key.includes('role') ? 'Role ID' : key.includes('user') ? 'User ID' : 'Channel ID'}
+              value={item}
+              onChange={(e) => updateItem(key, index, e.target.value)}
+              className="bg-[#2C2F33] border-gray-600 text-white"
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => removeItem(key, index)}
+              className="bg-[#2C2F33] border-gray-600 text-gray-400 hover:text-red-400"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        ))}
+        {(!config[key] || config[key].length === 0) && (
+          <p className="text-gray-500 text-center py-4">No items added yet</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  return (
+    <div className="space-y-6">
+      {renderRoleList(
+        'admin_roles',
+        '👑 Admin Roles',
+        'Roles that have full bot administration access'
+      )}
+
+      {renderRoleList(
+        'moderator_roles',
+        '🛡️ Moderator Roles',
+        'Roles that have moderation command access'
+      )}
+
+      {renderRoleList(
+        'allowed_channels',
+        '📝 Allowed Channels',
+        'Channels where the bot can respond (empty = all channels)'
+      )}
+
+      {renderRoleList(
+        'blacklisted_users',
+        '🚫 Blacklisted Users',
+        'Users who are banned from using the bot'
+      )}
+    </div>
+  );
+}

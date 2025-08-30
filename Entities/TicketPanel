@@ -1,0 +1,37 @@
+{
+  "name": "TicketPanel",
+  "type": "object",
+  "properties": {
+    "bot_id": {
+      "type": "string"
+    },
+    "server_id": {
+      "type": "string"
+    },
+    "channel_id": {
+      "type": "string"
+    },
+    "message_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "button_label": {
+      "type": "string",
+      "default": "Create Ticket"
+    },
+    "button_emoji": {
+      "type": "string",
+      "default": "✉️"
+    }
+  },
+  "required": [
+    "bot_id",
+    "server_id",
+    "channel_id"
+  ]
+}

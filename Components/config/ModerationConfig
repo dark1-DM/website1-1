@@ -1,0 +1,124 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+
+export default function ModerationConfig({ config, onChange }) {
+  const handleToggle = (key, value) => {
+    onChange({ [key]: value });
+  };
+
+  const handleInputChange = (key, value) => {
+    onChange({ [key]: value });
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card className="bg-[#1a1a1a] border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            🛡️ Auto-Moderation Settings
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-gray-300">Enable Auto-Moderation</Label>
+              <p className="text-sm text-gray-500">Automatically detect and handle rule violations</p>
+            </div>
+            <Switch
+              checked={config.auto_mod_enabled}
+              onCheckedChange={(value) => handleToggle('auto_mod_enabled', value)}
+            />
+          </div>
+
+          <Separator className="bg-gray-700" />
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-gray-300">Spam Detection</Label>
+              <p className="text-sm text-gray-500">Detect and remove spam messages</p>
+            </div>
+            <Switch
+              checked={config.spam_detection}
+              onCheckedChange={(value) => handleToggle('spam_detection', value)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-gray-300">Bad Word Filter</Label>
+              <p className="text-sm text-gray-500">Filter inappropriate language</p>
+            </div>
+            <Switch
+              checked={config.bad_word_filter}
+              onCheckedChange={(value) => handleToggle('bad_word_filter', value)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-gray-300">Auto-Ban</Label>
+              <p className="text-sm text-gray-500">Automatically ban users after max warnings</p>
+            </div>
+            <Switch
+              checked={config.auto_ban_enabled}
+              onCheckedChange={(value) => handleToggle('auto_ban_enabled', value)}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-[#1a1a1a] border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-white">Warning System</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label className="text-gray-300">Maximum Warnings</Label>
+            <Input
+              type="number"
+              min="1"
+              max="10"
+              value={config.max_warnings}
+              onChange={(e) => handleInputChange('max_warnings', parseInt(e.target.value) || 3)}
+              className="bg-[#2C2F33] border-gray-600 text-white mt-2"
+            />
+            <p className="text-sm text-gray-500 mt-1">Number of warnings before action is taken</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-[#1a1a1a] border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-white">Channels & Roles</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label className="text-gray-300">Log Channel ID</Label>
+            <Input
+              placeholder="123456789012345678"
+              value={config.log_channel}
+              onChange={(e) => handleInputChange('log_channel', e.target.value)}
+              className="bg-[#2C2F33] border-gray-600 text-white mt-2"
+            />
+            <p className="text-sm text-gray-500 mt-1">Channel where moderation logs will be sent</p>
+          </div>
+
+          <div>
+            <Label className="text-gray-300">Mute Role ID</Label>
+            <Input
+              placeholder="123456789012345678"
+              value={config.mute_role}
+              onChange={(e) => handleInputChange('mute_role', e.target.value)}
+              className="bg-[#2C2F33] border-gray-600 text-white mt-2"
+            />
+            <p className="text-sm text-gray-500 mt-1">Role to assign when muting users</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

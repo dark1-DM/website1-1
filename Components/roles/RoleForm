@@ -1,0 +1,326 @@
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { Save, X, Palette } from "lucide-react";
+
+const roleColors = [
+  { name: "Default", value: "#99AAB5" },
+  { name: "Red", value: "#F04747" },
+  { name: "Orange", value: "#FF7F00" },
+  { name: "Yellow", value: "#FAA61A" },
+  { name: "Green", value: "#43B581" },
+  { name: "Blue", value: "#5865F2" },
+  { name: "Purple", value: "#9C84EF" },
+  { name: "Pink", value: "#FF69B4" },
+  { name: "Brown", value: "#A0522D" },
+  { name: "Black", value: "#2C2F33" }
+];
+
+const permissionCategories = {
+  general: {
+    title: "General Permissions",
+    permissions: {
+      administrator: "Administrator",
+      manage_guild: "Manage Server",
+      manage_roles: "Manage Roles",
+      manage_channels: "Manage Channels",
+      view_audit_log: "View Audit Log",
+      manage_webhooks: "Manage Webhooks",
+      manage_emojis: "Manage Emojis"
+    }
+  },
+  membership: {
+    title: "Membership Permissions",
+    permissions: {
+      kick_members: "Kick Members",
+      ban_members: "Ban Members",
+      change_nickname: "Change Nickname",
+      manage_nicknames: "Manage Nicknames",
+      create_instant_invite: "Create Invite"
+    }
+  },
+  text: {
+    title: "Text Permissions",
+    permissions: {
+      read_messages: "Read Messages",
+      send_messages: "Send Messages",
+      send_tts_messages: "Send TTS Messages",
+      manage_messages: "Manage Messages",
+      embed_links: "Embed Links",
+      attach_files: "Attach Files",
+      read_message_history: "Read Message History",
+      mention_everyone: "Mention Everyone",
+      use_external_emojis: "Use External Emojis",
+      add_reactions: "Add Reactions"
+    }
+  },
+  voice: {
+    title: "Voice Permissions",
+    permissions: {
+      connect: "Connect",
+      speak: "Speak",
+      mute_members: "Mute Members",
+      deafen_members: "Deafen Members",
+      move_members: "Move Members",
+      use_voice_activation: "Use Voice Activity",
+      priority_speaker: "Priority Speaker",
+      stream: "Video/Stream"
+    }
+  }
+};
+
+export default function RoleForm({ role, bots, onSubmit, onCancel }) {
+  const [formData, setFormData] = useState({
+    role_name: '',
+    description: '',
+    role_color: '#99AAB5',
+    position: 0,
+    is_mentionable: false,
+    is_hoisted: false,
+    auto_assign: false,
+    permissions: {},
+    bot_id: '',
+    server_id: '',
+    server_name: ''
+  });
+
+  useEffect(() => {
+    if (role) {
+      setFormData({
+        ...role,
+        permissions: role.permissions || {}
+      });
+    } else if (bots.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        bot_id: bots[0].id
+      }));
+    }
+  }, [role, bots]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  const handleInputChange = (key, value) => {
+    setFormData(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handlePermissionChange = (permission, value) => {
+    setFormData(prev => ({
+      ...prev,
+      permissions: {
+        ...prev.permissions,
+        [permission]: value
+      }
+    }));
+  };
+
+  return (
+    <Card className="bg-[#2C2F33] border-gray-800">
+      <CardHeader>
+        <CardTitle className="text-white flex items-center gap-2">
+          <Palette className="w-5 h-5" />
+          {role ? 'Edit Role' : 'Create New Role'}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit}>
+          <Tabs defaultValue="basic" className="w-full">
+            <TabsList className="bg-[#1a1a1a] mb-6">
+              <TabsTrigger value="basic">Basic Settings</TabsTrigger>
+              <TabsTrigger value="permissions">Permissions</TabsTrigger>
+              <TabsTrigger value="advanced">Advanced</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="basic" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-300">Bot *</Label>
+                  <Select
+                    value={formData.bot_id}
+                    onValueChange={(value) => handleInputChange('bot_id', value)}
+                    disabled={!!role}
+                  >
+                    <SelectTrigger className="bg-[#1a1a1a] border-gray-600 text-white mt-2">
+                      <SelectValue placeholder="Select a bot" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#2C2F33] border-gray-700">
+                      {bots.map((bot) => (
+                        <SelectItem key={bot.id} value={bot.id} className="text-gray-300">
+                          {bot.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-gray-300">Role Name *</Label>
+                  <Input
+                    value={formData.role_name}
+                    onChange={(e) => handleInputChange('role_name', e.target.value)}
+                    placeholder="Enter role name"
+                    required
+                    className="bg-[#1a1a1a] border-gray-600 text-white mt-2"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-300">Server ID</Label>
+                  <Input
+                    value={formData.server_id}
+                    onChange={(e) => handleInputChange('server_id', e.target.value)}
+                    placeholder="Discord server ID"
+                    className="bg-[#1a1a1a] border-gray-600 text-white mt-2"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-gray-300">Server Name</Label>
+                  <Input
+                    value={formData.server_name}
+                    onChange={(e) => handleInputChange('server_name', e.target.value)}
+                    placeholder="Display name for the server"
+                    className="bg-[#1a1a1a] border-gray-600 text-white mt-2"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-gray-300">Description</Label>
+                <Textarea
+                  value={formData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  placeholder="Describe the purpose of this role"
+                  className="bg-[#1a1a1a] border-gray-600 text-white mt-2"
+                />
+              </div>
+
+              <div>
+                <Label className="text-gray-300 mb-3 block">Role Color</Label>
+                <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+                  {roleColors.map((color) => (
+                    <button
+                      key={color.value}
+                      type="button"
+                      onClick={() => handleInputChange('role_color', color.value)}
+                      className={`w-8 h-8 rounded-full border-2 transition-all ${
+                        formData.role_color === color.value ? 'border-white scale-110' : 'border-gray-600'
+                      }`}
+                      style={{ backgroundColor: color.value }}
+                      title={color.name}
+                    />
+                  ))}
+                </div>
+                <Input
+                  value={formData.role_color}
+                  onChange={(e) => handleInputChange('role_color', e.target.value)}
+                  placeholder="#FFFFFF"
+                  className="bg-[#1a1a1a] border-gray-600 text-white mt-3 w-32"
+                />
+              </div>
+
+              <div>
+                <Label className="text-gray-300">Position</Label>
+                <Input
+                  type="number"
+                  value={formData.position}
+                  onChange={(e) => handleInputChange('position', parseInt(e.target.value) || 0)}
+                  className="bg-[#1a1a1a] border-gray-600 text-white mt-2 w-32"
+                />
+                <p className="text-xs text-gray-500 mt-1">Higher numbers = higher in hierarchy</p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="permissions" className="space-y-6">
+              {Object.entries(permissionCategories).map(([categoryKey, category]) => (
+                <div key={categoryKey}>
+                  <h4 className="text-white font-medium mb-3">{category.title}</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {Object.entries(category.permissions).map(([permKey, permName]) => (
+                      <div key={permKey} className="flex items-center justify-between p-2 bg-[#1a1a1a] rounded">
+                        <Label className="text-gray-300 text-sm">{permName}</Label>
+                        <Switch
+                          checked={formData.permissions[permKey] || false}
+                          onCheckedChange={(value) => handlePermissionChange(permKey, value)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <Separator className="bg-gray-700 mt-4" />
+                </div>
+              ))}
+            </TabsContent>
+
+            <TabsContent value="advanced" className="space-y-4">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded">
+                  <div>
+                    <Label className="text-gray-300">Display role members separately</Label>
+                    <p className="text-xs text-gray-500">Show role members in a separate category</p>
+                  </div>
+                  <Switch
+                    checked={formData.is_hoisted}
+                    onCheckedChange={(value) => handleInputChange('is_hoisted', value)}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded">
+                  <div>
+                    <Label className="text-gray-300">Allow anyone to mention this role</Label>
+                    <p className="text-xs text-gray-500">Let everyone @mention this role</p>
+                  </div>
+                  <Switch
+                    checked={formData.is_mentionable}
+                    onCheckedChange={(value) => handleInputChange('is_mentionable', value)}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded">
+                  <div>
+                    <Label className="text-gray-300">Auto-assign to new members</Label>
+                    <p className="text-xs text-gray-500">Automatically give this role to new server members</p>
+                  </div>
+                  <Switch
+                    checked={formData.auto_assign}
+                    onCheckedChange={(value) => handleInputChange('auto_assign', value)}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-700">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="bg-[#2C2F33] border-gray-600 text-gray-300"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="bg-[#5865F2] hover:bg-[#4752C4] text-white"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {role ? 'Update Role' : 'Create Role'}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}

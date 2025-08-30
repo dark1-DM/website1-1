@@ -1,0 +1,34 @@
+{
+  "name": "ReactionRole",
+  "type": "object",
+  "properties": {
+    "bot_id": {
+      "type": "string"
+    },
+    "server_id": {
+      "type": "string"
+    },
+    "message_id": {
+      "type": "string"
+    },
+    "channel_id": {
+      "type": "string"
+    },
+    "emoji": {
+      "type": "string"
+    },
+    "role_id": {
+      "type": "string"
+    },
+    "role_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "bot_id",
+    "server_id",
+    "message_id",
+    "emoji",
+    "role_id"
+  ]
+}

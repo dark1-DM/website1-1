@@ -1,0 +1,61 @@
+{
+  "name": "DiscordBot",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the Discord bot"
+    },
+    "token": {
+      "type": "string",
+      "description": "Discord bot token"
+    },
+    "description": {
+      "type": "string",
+      "description": "Bot description or purpose"
+    },
+    "server_count": {
+      "type": "number",
+      "description": "Number of servers the bot is in",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "online",
+        "offline",
+        "idle",
+        "maintenance"
+      ],
+      "default": "offline",
+      "description": "Current bot status"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Bot avatar image URL"
+    },
+    "prefix": {
+      "type": "string",
+      "description": "Command prefix for the bot",
+      "default": "!"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "moderation",
+        "music",
+        "utility",
+        "gaming",
+        "economy",
+        "fun",
+        "other"
+      ],
+      "default": "utility",
+      "description": "Bot category/purpose"
+    }
+  },
+  "required": [
+    "name",
+    "token"
+  ]
+}

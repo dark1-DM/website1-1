@@ -1,0 +1,57 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { Activity, Bot } from "lucide-react";
+
+export default function RecentActivity({ bots }) {
+  const recentBots = bots
+    .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
+    .slice(0, 5);
+
+  return (
+    <Card className="bg-[#2C2F33] border-gray-800">
+      <CardHeader className="border-b border-gray-800">
+        <CardTitle className="text-white flex items-center gap-2">
+          <Activity className="w-5 h-5" />
+          Recent Activity
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        {recentBots.length === 0 ? (
+          <div className="p-6 text-center text-gray-400">
+            No activity yet
+          </div>
+        ) : (
+          <div className="space-y-0">
+            {recentBots.map((bot, index) => (
+              <div key={bot.id} className={`p-4 ${index !== recentBots.length - 1 ? 'border-b border-gray-800' : ''}`}>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-[#5865F2] rounded-lg flex items-center justify-center">
+                    <Bot className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-white text-sm font-medium">{bot.name}</p>
+                    <p className="text-gray-400 text-xs">
+                      Added {format(new Date(bot.created_date), "MMM d, HH:mm")}
+                    </p>
+                  </div>
+                  <Badge 
+                    className={`text-xs ${
+                      bot.status === 'online' ? 'bg-[#43B581]' :
+                      bot.status === 'idle' ? 'bg-[#FAA61A]' :
+                      bot.status === 'maintenance' ? 'bg-[#F04747]' :
+                      'bg-gray-600'
+                    }`}
+                  >
+                    {bot.status}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

@@ -1,0 +1,82 @@
+{
+  "name": "CustomCommand",
+  "type": "object",
+  "properties": {
+    "bot_id": {
+      "type": "string",
+      "description": "Reference to the Discord bot"
+    },
+    "server_id": {
+      "type": "string",
+      "description": "Discord server ID (optional for global commands)"
+    },
+    "command_name": {
+      "type": "string",
+      "description": "The command trigger"
+    },
+    "response_type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "embed",
+        "reaction",
+        "dm"
+      ],
+      "default": "text",
+      "description": "Type of response"
+    },
+    "response_content": {
+      "type": "string",
+      "description": "The response content or message"
+    },
+    "embed_config": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        },
+        "thumbnail": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "footer": {
+          "type": "string"
+        }
+      }
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Required roles or permissions"
+    },
+    "cooldown": {
+      "type": "number",
+      "default": 5,
+      "description": "Command cooldown in seconds"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "usage_count": {
+      "type": "number",
+      "default": 0,
+      "description": "How many times this command has been used"
+    }
+  },
+  "required": [
+    "bot_id",
+    "command_name",
+    "response_content"
+  ]
+}
